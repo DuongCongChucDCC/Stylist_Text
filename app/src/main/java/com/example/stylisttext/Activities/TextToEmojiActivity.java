@@ -110,6 +110,9 @@ public class TextToEmojiActivity extends AppCompatActivity {
         setSupportActionBar(binding.toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle("Text to Emoji");
+        binding.toolbar.setNavigationOnClickListener(v -> {
+            onBackPressed();
+        });
 
         binding.emojiInputLayout.getEditText().setText("█");
 

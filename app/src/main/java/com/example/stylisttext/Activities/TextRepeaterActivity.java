@@ -33,6 +33,9 @@ public class TextRepeaterActivity extends AppCompatActivity {
         setSupportActionBar(binding.toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle("Text Repeater");
+        binding.toolbar.setNavigationOnClickListener(v -> {
+            onBackPressed();
+        });
         binding.sliderRepeat.addOnChangeListener((slider, value, fromUser) -> {
             repeatNumber = (int) value;
             makeText();

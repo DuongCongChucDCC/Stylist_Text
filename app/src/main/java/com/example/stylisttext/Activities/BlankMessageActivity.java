@@ -34,6 +34,9 @@ public class BlankMessageActivity extends AppCompatActivity {
         setSupportActionBar(binding.toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle("Blank Message");
+        binding.toolbar.setNavigationOnClickListener(v -> {
+            onBackPressed();
+        });
         binding.slider.addOnChangeListener((slider, value, fromUser) -> {
             currentSize = (int) value;
             updateText();

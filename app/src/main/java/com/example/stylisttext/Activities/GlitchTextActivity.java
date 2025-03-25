@@ -41,6 +41,9 @@ public class GlitchTextActivity extends AppCompatActivity {
         setSupportActionBar(binding.toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle("Glitch Text");
+        binding.toolbar.setNavigationOnClickListener(v -> {
+            onBackPressed();
+        });
 
         binding.sliderUpwards.addOnChangeListener((slider, value, fromUser) -> {
             upSize = (int) value;
