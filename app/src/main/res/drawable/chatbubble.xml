@@ -1,0 +1,15 @@
+<!-- res/drawable/chat_bubble_right.xml -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="#7A7676" /> <!-- Màu nền xám nhạt -->
+    <corners
+        android:topLeftRadius="16dp"
+        android:topRightRadius="4dp"
+        android:bottomLeftRadius="16dp"
+        android:bottomRightRadius="16dp" />
+    <padding
+        android:left="12dp"
+        android:top="8dp"
+        android:right="12dp"
+        android:bottom="8dp" />
+</shape>
