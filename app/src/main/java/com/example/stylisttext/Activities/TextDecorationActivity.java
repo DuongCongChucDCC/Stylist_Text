@@ -42,17 +42,27 @@ public class TextDecorationActivity extends AppCompatActivity {
             onBackPressed();
         });
         items = new ArrayList<>();
-        items.add(new HolderDTO("The quick brown fox", "Decoration"));
-        items.add(new HolderDTO("The quick brown fox", "Decoration"));
-        items.add(new HolderDTO("The quick brown fox", "Decoration"));
-        items.add(new HolderDTO("The quick brown fox", "Decoration"));
-        items.add(new HolderDTO("The quick brown fox", "Decoration"));
-        items.add(new HolderDTO("The quick brown fox", "Decoration"));
-        items.add(new HolderDTO("The quick brown fox", "Decoration"));
+        items.add(new HolderDTO("The quick brown fox", "", "Decoration"));
+        items.add(new HolderDTO("The quick brown fox", "", "Decoration"));
+        items.add(new HolderDTO("The quick brown fox", "", "Decoration"));
+        items.add(new HolderDTO("The quick brown fox", "", "Decoration"));
+        items.add(new HolderDTO("The quick brown fox", "", "Decoration"));
+        items.add(new HolderDTO("The quick brown fox", "", "Decoration"));
+        items.add(new HolderDTO("The quick brown fox", "", "Decoration"));
 
         adapter = new HolderAdapter(items, inputText);
         binding.recyclerView.setAdapter(adapter);
         binding.recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
+        adapter.setOnEditButtonClickListener(editedText -> {
+            binding.textInputLayout.getEditText().setText(editedText);
+            inputText = editedText;
+            adapter.updateInputText(inputText);
+            adapter.notifyDataSetChanged();
+        });
+        binding.textInputLayout.getEditText().setText(getIntent().getStringExtra("text"));
+        inputText = binding.textInputLayout.getEditText().getText().toString();
+        adapter.updateInputText(inputText);
+        adapter.notifyDataSetChanged();
 
         binding.textInputLayout.getEditText().addTextChangedListener(new TextWatcher() {
             @Override
@@ -63,8 +73,8 @@ public class TextDecorationActivity extends AppCompatActivity {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 inputText = s.toString();
-                adapter = new HolderAdapter(items, inputText);
-                binding.recyclerView.setAdapter(adapter);
+                adapter.updateInputText(inputText);
+                adapter.notifyDataSetChanged();
             }
 
             @Override

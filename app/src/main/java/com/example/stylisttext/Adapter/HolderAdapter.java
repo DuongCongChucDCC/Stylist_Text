@@ -1,18 +1,26 @@
 package com.example.stylisttext.Adapter;
 
+import android.app.AlertDialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.RadioButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.stylisttext.Activities.TextDecorationActivity;
+import com.example.stylisttext.Activities.TextFrameActivity;
+import com.example.stylisttext.Activities.TextRepeaterActivity;
+import com.example.stylisttext.Activities.TextStyleActivity;
 import com.example.stylisttext.DTO.HolderDTO;
 import com.example.stylisttext.R;
 
@@ -33,6 +41,20 @@ public class HolderAdapter extends RecyclerView.Adapter<HolderAdapter.ViewHolder
         this.inputText = inputText;
     }
 
+    public void updateInputText(String newInputText) {
+        this.inputText = newInputText;
+    }
+
+    public interface OnEditButtonClickListener {
+        void onEditButtonClick(String textToEdit);
+    }
+
+    private OnEditButtonClickListener editButtonListener;
+
+    public void setOnEditButtonClickListener(OnEditButtonClickListener listener) {
+        this.editButtonListener = listener;
+    }
+
     @NonNull
     @Override
     public HolderAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -47,7 +69,27 @@ public class HolderAdapter extends RecyclerView.Adapter<HolderAdapter.ViewHolder
         HolderDTO item = items.get(position);
         holder.txtNumber.setText(String.valueOf(position + 1));
 
-        switch (item.getUnicodeType()) {
+        AlertDialog.Builder onclickBulder = new AlertDialog.Builder(context);
+        View dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_itemclick, null);
+        onclickBulder.setView(dialogView);
+        TextView preview = dialogView.findViewById(R.id.tvPreview);
+        ImageButton editButton = dialogView.findViewById(R.id.editButton);
+        ImageButton copyButton = dialogView.findViewById(R.id.copyButton);
+        androidx.appcompat.widget.AppCompatButton btnMoveTo = dialogView.findViewById(R.id.btnMoveTo);
+
+        AlertDialog onclickDialog = onclickBulder.create();
+
+        AlertDialog.Builder moveBuilder = new AlertDialog.Builder(context);
+        View moveDialogView = LayoutInflater.from(context).inflate(R.layout.dialog_moveto, null);
+        moveBuilder.setView(moveDialogView);
+        RadioButton rbTextFrame = moveDialogView.findViewById(R.id.rbTextFrame);
+        RadioButton rbTextDecorations = moveDialogView.findViewById(R.id.rbTextDecorations);
+        RadioButton rbTextRepeater = moveDialogView.findViewById(R.id.rbTextRepeater);
+        RadioButton rbTextStyle = moveDialogView.findViewById(R.id.rbTextStyle);
+
+        AlertDialog moveDialog = moveBuilder.create();
+
+        switch (item.getType()) {
             case "Decoration":
                 if (inputText != null && !inputText.isEmpty()) {
                     holder.txtText.setText(decorationSymbols[0] + inputText + decorationSymbols[0]);
@@ -57,6 +99,16 @@ public class HolderAdapter extends RecyclerView.Adapter<HolderAdapter.ViewHolder
                 if (decorationSymbols.length > 1) {
                     decorationSymbols = Arrays.copyOfRange(decorationSymbols, 1, decorationSymbols.length);
                 }
+                holder.itemView.setOnClickListener(v -> {
+                    onclickDialog.show();
+                    preview.setText(holder.txtText.getText().toString());
+                    btnMoveTo.setOnClickListener(v1 -> {
+                        moveBuilder.setTitle("Move to");
+                        rbTextDecorations.setVisibility(View.INVISIBLE);
+                        onclickDialog.dismiss();
+                        moveDialog.show();
+                    });
+                });
                 break;
             case "Frame":
                 String[] currentFrame = frames[0].split(" - ");
@@ -65,19 +117,80 @@ public class HolderAdapter extends RecyclerView.Adapter<HolderAdapter.ViewHolder
                 if (frames.length > 1) {
                     frames = Arrays.copyOfRange(frames, 1, frames.length);
                 }
+                holder.itemView.setOnClickListener(v -> {
+                    onclickDialog.show();
+                    preview.setText(holder.txtText.getText().toString());
+                    btnMoveTo.setOnClickListener(v1 -> {
+                        moveBuilder.setTitle("Move to");
+                        rbTextDecorations.setVisibility(View.INVISIBLE);
+                        rbTextRepeater.setVisibility(View.INVISIBLE);
+                        rbTextFrame.setVisibility(View.INVISIBLE);
+                        onclickDialog.dismiss();
+                        moveDialog.show();
+                    });
+                });
                 break;
-            default:
+            case "Text":
+            case "Number":
                 if (inputText != null && !inputText.isEmpty()) {
                     holder.txtText.setText(UnicodeAdapter(inputText, item.getUnicodeType()));
                 } else {
                     holder.txtText.setText(UnicodeAdapter(item.getTextExample(), item.getUnicodeType()));
                 }
+                holder.itemView.setOnClickListener(v -> {
+                    onclickDialog.show();
+                    preview.setText(holder.txtText.getText().toString());
+                    btnMoveTo.setOnClickListener(v1 -> {
+                        moveBuilder.setTitle("Move to");
+                        rbTextStyle.setVisibility(View.INVISIBLE);
+                        onclickDialog.dismiss();
+                        moveDialog.show();
+                    });
+                });
+                break;
+            default:
+                holder.txtText.setText(item.getTextExample());
+                break;
         }
+
+        editButton.setOnClickListener(v -> {
+            if (editButtonListener != null) {
+                editButtonListener.onEditButtonClick(holder.txtText.getText().toString());
+            }
+            onclickDialog.dismiss();
+        });
+
+        copyButton.setOnClickListener(v -> {
+            copy(holder.txtText.getText().toString());
+            onclickDialog.dismiss();
+        });
+
         holder.imgCopy.setOnClickListener(v -> {
-            ClipboardManager clipboard = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
-            ClipData clip = ClipData.newPlainText("Unicode Text", holder.txtText.getText().toString());
-            clipboard.setPrimaryClip(clip);
-            Log.d("zzzzzzzzzzzzzzzzzzzz", "Text copied to clipboard: " + holder.txtText.getText().toString());
+            copy(holder.txtText.getText().toString());
+        });
+
+        rbTextFrame.setOnClickListener(v -> {
+            Intent intent = new Intent(context, TextFrameActivity.class);
+            intent.putExtra("text", holder.txtText.getText().toString());
+            context.startActivity(intent);
+        });
+
+        rbTextRepeater.setOnClickListener(v -> {
+            Intent intent = new Intent(context, TextRepeaterActivity.class);
+            intent.putExtra("text", holder.txtText.getText().toString());
+            context.startActivity(intent);
+        });
+
+        rbTextStyle.setOnClickListener(v -> {
+            Intent intent = new Intent(context, TextStyleActivity.class);
+            intent.putExtra("text", holder.txtText.getText().toString());
+            context.startActivity(intent);
+        });
+
+        rbTextDecorations.setOnClickListener(v -> {
+            Intent intent = new Intent(context, TextDecorationActivity.class);
+            intent.putExtra("text", holder.txtText.getText().toString());
+            context.startActivity(intent);
         });
     }
 
@@ -96,6 +209,13 @@ public class HolderAdapter extends RecyclerView.Adapter<HolderAdapter.ViewHolder
             txtText = itemView.findViewById(R.id.txtText);
             imgCopy = itemView.findViewById(R.id.imgCopy);
         }
+    }
+
+    public void copy(String txt) {
+        ClipboardManager clipboard = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
+        ClipData clip = ClipData.newPlainText("Unicode Text", txt);
+        clipboard.setPrimaryClip(clip);
+        Toast.makeText(context, "Copied: " + txt, Toast.LENGTH_SHORT).show();
     }
 
     public String UnicodeAdapter(String textExample, String unicodeType) {

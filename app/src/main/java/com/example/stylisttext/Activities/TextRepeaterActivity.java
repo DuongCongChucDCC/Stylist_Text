@@ -40,6 +40,8 @@ public class TextRepeaterActivity extends AppCompatActivity {
             repeatNumber = (int) value;
             makeText();
         });
+        binding.textInputLayout.getEditText().setText(getIntent().getStringExtra("text"));
+        makeText();
         binding.textInputLayout.getEditText().addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
